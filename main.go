@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"image/draw"
@@ -9,10 +10,13 @@ import (
 )
 
 func main() {
-	// Get input image file
-	// Iterate through pixels
-	// Get kernel for each pixel (corners will be incomplete)
-	file, err := os.Open("test.jpeg")
+	flag.Parse()
+	if flag.NArg() < 1 {
+		fmt.Println(fmt.Errorf("Input file name required as argument"))
+		os.Exit(-1)
+	}
+	filePath := flag.Arg(0)
+	file, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
 	}
