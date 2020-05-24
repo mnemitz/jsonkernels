@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"image"
 	"image/color"
 )
@@ -43,28 +42,38 @@ func (k kernel) RightNeighbours() [3]*color.RGBA {
 	}
 }
 
-func (k kernel) toVerboseJSON() ([]byte, error) {
-	return json.Marshal(&struct {
-		Value color.RGBA
-		N0,
-		N1,
-		N2,
-		N3,
-		N4,
-		N5,
-		N6,
-		N7 *color.RGBA `json:",omitempty"`
-	}{
-		k.Value,
-		k.Neighbours[0],
-		k.Neighbours[1],
-		k.Neighbours[2],
-		k.Neighbours[3],
-		k.Neighbours[4],
-		k.Neighbours[5],
-		k.Neighbours[6],
-		k.Neighbours[7],
-	})
+type VerboseKernel struct {
+	HexColor uint32 `json:"color"`
+	N0,
+	N1,
+	N2,
+	N3,
+	N4,
+	N5,
+	N6,
+	N7 *uint32 `json:",omitempty"`
+}
+
+func (k kernel) toVerboseKernel() *VerboseKernel {
+	return &VerboseKernel{
+		*colorToHex(&k.Value),
+		colorToHex(k.Neighbours[0]),
+		colorToHex(k.Neighbours[1]),
+		colorToHex(k.Neighbours[2]),
+		colorToHex(k.Neighbours[3]),
+		colorToHex(k.Neighbours[4]),
+		colorToHex(k.Neighbours[5]),
+		colorToHex(k.Neighbours[6]),
+		colorToHex(k.Neighbours[7]),
+	}
+}
+
+func colorToHex(c *color.RGBA) *uint32 {
+	if c == nil {
+		return nil
+	}
+	color := uint32(c.R)<<24 + uint32(c.G)<<16 + uint32(c.B)<<8 + uint32(c.A)
+	return &color
 }
 
 func getNthNeighbourPosition(x, y, n int) (int, int) {
@@ -74,14 +83,14 @@ func getNthNeighbourPosition(x, y, n int) (int, int) {
 }
 
 var kernelOffsetOrder = [8][2]int{
-	[2]int{-1, -1},
-	[2]int{0, -1},
-	[2]int{1, -1},
-	[2]int{-1, 0},
-	[2]int{1, 0},
-	[2]int{-1, 1},
-	[2]int{0, 1},
-	[2]int{1, 1},
+	{-1, -1},
+	{0, -1},
+	{1, -1},
+	{-1, 0},
+	{1, 0},
+	{-1, 1},
+	{0, 1},
+	{1, 1},
 }
 
 func naiveKernels(rect image.Rectangle, rgba *image.RGBA, kernels chan kernel) {
